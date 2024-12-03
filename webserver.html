@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download ISO Files</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* Logo Styles */
+        .logo {
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        .logo img {
+            max-width: 150px;
+        }
+
+        /* Menu Bar Styles */
+        nav {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav a {
+            padding: 14px 20px;
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        nav a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Container to hold content */
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 20px;
+            padding-top: 20px;
+        }
+
+        /* Card styles for each option */
+        .icon-card {
+            width: 150px;
+            height: 200px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .icon-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .icon-card p {
+            margin: 0;
+            font-weight: bold;
+            background-color: #f1f1f1;
+            font-size: 16px;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo Section -->
+    <div class="logo">
+        <img src="/static/images/logo.avif" alt="Logo">
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav>
+        <a href="#" class="active" onclick="showCategory('iso')">ISO</a>
+        <a href="#" onclick="showCategory('template')">Templates</a>
+        <a href="#" onclick="showCategory('lxc')">LXC</a>
+    </nav>
+
+    <!-- Main Title -->
+    <h1>Application Ready To Use</h1>
+
+    <!-- Content Container (ISO, Templates, LXC) -->
+    <div id="content" class="container">
+        <!-- Content for ISO, Templates, and LXC will be dynamically displayed here -->
+    </div>
+
+    <script>
+        // Default category to show
+        let currentCategory = 'iso';
+
+        // Function to show content based on the selected category
+        function showCategory(category) {
+            currentCategory = category;
+            updateMenu();
+            updateContent();
+        }
+
+        // Function to update the active state of the menu items
+        function updateMenu() {
+            const links = document.querySelectorAll('nav a');
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.innerText.toLowerCase() === currentCategory) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Function to update the displayed content based on the selected category
+        function updateContent() {
+            const content = document.getElementById('content');
+            content.innerHTML = ''; // Clear current content
+
+            let data = [];
+            if (currentCategory === 'iso') {
+                data = [
+                    { name: 'MySQL', file: 'mysql.iso', img: '/static/images/development+logo+mysql+icon-1320184807686758112.png' },
+                    { name: 'MongoDB', file: 'mongo.iso', img: '/static/images/download.jpeg' },
+                    { name: 'Django', file: 'django.iso', img: '/static/images/download.png' },
+                    { name: 'Ubuntu', file: 'ubunto.iso', img: '/static/images/ubuntu.png' },
+                    { name: 'GitLab', file: 'gitlab.iso', img: '/static/images/GitLab_icon.svg.png' }
+                ];
+            } else if (currentCategory === 'template') {
+                data = [
+                    { name: 'Jammy_server', file: 'jammy_server.qcow2', img: '/static/images/jammy.png' },
+                    { name: 'mysql', file: 'sql.qcow2', img: '/static/images/development+logo+mysql+icon-1320184807686758112.png' }
+                ];
+            } else if (currentCategory === 'lxc') {
+                data = [
+                    { name: 'MariaDB', file: 'maria_lxc.raw', img: '/static/images/maria.jpeg' },
+                    { name: 'Django', file: 'django_lxc.raw', img: '/static/images/download.png' }
+                ];
+            }
+
+            // Add cards to the container based on the category
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('icon-card');
+                card.onclick = () => downloadFile(item.file);
+
+                const img = document.createElement('img');
+                img.src = item.img;
+                img.alt = item.name;
+
+                const p = document.createElement('p');
+                p.textContent = item.name;
+
+                card.appendChild(img);
+                card.appendChild(p);
+
+                content.appendChild(card);
+            });
+        }
+
+        // Function to handle file download and check availability
+        function downloadFile(fileName) {
+            // Send a request to check if the file exists
+            fetch(`/check_file/${fileName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        alert("File is downloading...");
+                        // Redirect to the Flask route to download the file
+                        window.location.href = `/download/${fileName}`;
+                    } else {
+                        alert("File is not available.");
+                    }
+                });
+        }
+
+        // Initialize content for the default category (ISO)
+        updateContent();
+    </script>
+</body>
+</html>
